@@ -5,8 +5,7 @@ class is HTTPRPCRouter #webapi2:
 
 model TaskRequest
 {
-    nam
-    e as string
+    name as string
     description as string
 }
 
