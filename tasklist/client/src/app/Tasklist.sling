@@ -2,6 +2,11 @@ import jk.widget.common
 
 class is TitledWidget #widget:
 
+model TaskModel
+{
+    taskname as string
+}
+
 ui LayerWidget
 {
     VerticalScrollerWidget {
@@ -25,7 +30,14 @@ ui LayerWidget
                     backgroundColor = Color.instance("#00539CFF")
                     fontSize = context.getHeightValue("5mm")
                     clickHandler = func {
-                        onAddingTaskClicked()
+                        var task = new TaskModel()
+                        task.setTaskName(taskname.getWidgetText())
+                        APIClient.getInstance().addTask(task.toDynamicMap(), func(res as DynamicMap){
+                            context.showMessageDialog("Notice", "Task Added Successfully")
+                            NavigationWidget.switchToContainer(this, new TaskListAdd(context))
+                        }, func(err as Error){
+                            context.showMessageDialog("Notice", "Failed To Add Task")
+                        })
                     }
                 }
             }
@@ -36,6 +48,8 @@ ui LayerWidget
 func initializeWidget override
 {
     base.initializeWidget()
+    grid.addColumn("Task Name", "taskname", 0.5)
+    grid.addWidgetHeaderRow()
     APIClient.getInstance().getTasks(func(response as DynamicMap) {
         var data = assert response.getDynamicMap("data")
         var records = data.getDynamicVector("records")
@@ -44,7 +58,7 @@ func initializeWidget override
         }
         else {
             foreach record as DynamicMap in records.toVector() {
-                var task = record.getString("name") .. " - " .. record.getString("description")
+                var task = record.getString("name")
                 var lblTask = LabelWidget.forText(context, task)
                 var hbox = HorizontalBoxWidget.forContext(context, 0, context.getHeightValue("0.5mm"))
                 hbox.addWidget(lblTask)
@@ -56,8 +70,3 @@ func initializeWidget override
 
 func getWidgetTitle as string:
     return "Task List"
-
-func onAddingTaskClicked
-{
-
-}
